@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+*.env
+example.env
+
+# Service account keys
+service-account-key.json
+*.json
+
+# Docker logs
+*.log
