@@ -26,6 +26,7 @@ We included an `example.env` file.
 Each team member should copy this file into their personal folder and rename it to `.env`, then add their own credentials:
 
 ```bash
+# Example environment variables – replace with your own values:
 GOOGLE_APPLICATION_CREDENTIALS=your-service-account-key.json
 PROJECT_ID=winners-or-loosers
 BQ_DATASET_ID=raw_data
@@ -34,7 +35,7 @@ BQ_TABLE_ID=winners_or_loosers
 Security
 
 A .gitignore file has been configured to make sure sensitive files (like personal keys) are never committed to GitHub.
-Even if a personal key is added by mistake, it will not be pushed.
+However, always double-check with git status before pushing, as manually staged files can still be committed.
 
 Workflow
 
@@ -43,3 +44,14 @@ The shared repository contains the base project setup.
 Each team member should place their personal service account key in their own environment, not in this repository.
 
 Contributions should be made via feature branches and merged with pull requests.
+
+### Getting Started
+
+1. Clone the repository  
+2. Create your own `.env` file based on `example.env`  
+3. Add your personal service account key to the project root  
+4. Install dependencies:  
+   ```bash
+   pip install -r requirements.txt
+5. - Run the project: python3 main.py
+   Make sure you have access to the required GCP resources (BigQuery, Storage).
