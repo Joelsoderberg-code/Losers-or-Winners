@@ -21,7 +21,7 @@ default_args = {
 with DAG(
     dag_id="fetch_and_load_pipeline",
     default_args=default_args,
-    schedule_interval="@daily",
+    schedule_interval=" 0 3 * * *",
     catchup=False,
     tags=["data_pipeline"],
 ) as dag:
@@ -36,8 +36,11 @@ with DAG(
             raise ValueError("POLYGON_API_KEY saknas i både .env och Airflow Variables")
         os.environ["POLYGON_API_KEY"] = api_key
         
-        # Övriga parametrar: Airflow Variables med defaultvärden
-        os.environ["TICKER"] = Variable.get("TICKER", default_var="AAPL")
+        # Övriga parametrar: Läs TICKER endast om den finns som Variable.
+        # Om den inte finns låter vi koden använda sin default (I:SPX).
+        ticker_var = Variable.get("TICKER", default_var=None)
+        if ticker_var:
+            os.environ["TICKER"] = ticker_var
         os.environ["START_DATE"] = Variable.get("START_DATE", default_var="2025-09-01")
         os.environ["END_DATE"] = Variable.get("END_DATE", default_var="2025-09-03")
         os.environ["OUTPUT_DIR"] = Variable.get(

@@ -26,7 +26,8 @@ def fetch_data_from_api() -> None:
     if not api_key:
         raise RuntimeError("POLYGON_API_KEY saknas i miljön")
 
-    ticker = os.getenv("TICKER", "AAPL")
+    # Standard: använd ETF:en SPY (tillgänglig på de flesta planer)
+    ticker = os.getenv("TICKER", "SPY")
     start_date = os.getenv("START_DATE", "2025-09-01")
     end_date = os.getenv("END_DATE", "2025-09-03")
 
