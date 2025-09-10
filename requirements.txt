@@ -1,13 +1,17 @@
-google-cloud-bigquery
-google-cloud-storage
-pandas
-requests
-python-dotenv
+# Viktigt: Installera Airflow separat med constraints (se README/kommandon)
 
+google-cloud-bigquery==3.17.1
+google-auth==2.34.0
+google-cloud-storage==2.18.2
 
+# Python 3.12-kompatibla binärer
+numpy==2.0.2
+pandas==2.2.2
+
+requests==2.32.3
+python-dotenv==1.0.1
 certifi==2025.8.3
 polygon-api-client==1.15.3
 psycopg2-binary==2.9.10
-python-dotenv==1.1.1
-urllib3==2.5.0
+urllib3==2.2.3
 websockets==14.2

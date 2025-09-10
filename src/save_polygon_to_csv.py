@@ -11,12 +11,8 @@ POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 print("Skript startar...")
 print(f"API-nyckel hittad: {'Ja' if POLYGON_API_KEY else 'Nej'}")
 
-#initiera Polygon client
-
+# initiera Polygon client
 client = RESTClient(POLYGON_API_KEY)
-
-# (Postgres-kod borttagen) – vi kommer istället skriva till CSV
-
 
 # Exempel: hämta dagliga aggregerade priser för AAPL
 ticker = "AAPL"
@@ -63,3 +59,5 @@ with open(csv_path, "w", newline="", encoding="utf-8") as f:
     writer.writerows(rows)
 
 print(f"Skrev {len(rows)} rader till {csv_path}")
+
+
