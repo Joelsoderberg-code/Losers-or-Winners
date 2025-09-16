@@ -1,18 +1,12 @@
 import os
 import csv
 from datetime import datetime
-from typing import List, Dict
 
-from dotenv import load_dotenv
 from polygon import RESTClient
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
-    from polygon import RESTClient
-    import csv
-    from datetime import datetime, timedelta
-    import os
 
     # Hämta gårdagens datum
     yesterday = datetime.now() - timedelta(days=1)
