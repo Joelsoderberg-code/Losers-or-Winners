@@ -1,7 +1,6 @@
-import os
 import csv
+import os
 from datetime import datetime
-from typing import List, Dict
 
 from dotenv import load_dotenv
 from polygon import RESTClient
@@ -40,22 +39,20 @@ def fetch_data_from_api() -> None:
 
     aggs = client.get_aggs(
         ticker,
-        1,               # 1-enhet
-        "day",           # tidsenhet: dag
+        1,  # 1-enhet
+        "day",  # tidsenhet: dag
         start_date,
         end_date,
     )
 
     print(f"Hämtade {len(aggs)} datapunkter för {ticker} ({start_date}..{end_date})")
 
-    rows: List[Dict[str, object]] = []
+    rows: list[dict[str, object]] = []
     for bar in aggs:
         rows.append(
             {
                 "ticker": ticker,
-                "date": datetime.fromtimestamp(bar.timestamp / 1000)
-                .date()
-                .isoformat(),
+                "date": datetime.fromtimestamp(bar.timestamp / 1000).date().isoformat(),
                 "open": bar.open,
                 "close": bar.close,
                 "volume": bar.volume,
@@ -63,9 +60,7 @@ def fetch_data_from_api() -> None:
         )
 
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(
-            f, fieldnames=["ticker", "date", "open", "close", "volume"]
-        )
+        writer = csv.DictWriter(f, fieldnames=["ticker", "date", "open", "close", "volume"])
         writer.writeheader()
         writer.writerows(rows)
 
@@ -74,5 +69,3 @@ def fetch_data_from_api() -> None:
 
 if __name__ == "__main__":
     fetch_data_from_api()
-
-
