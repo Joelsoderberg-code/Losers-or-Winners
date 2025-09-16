@@ -1,7 +1,6 @@
-import os
 import csv
+import os
 from datetime import datetime
-from typing import List, Dict
 
 from dotenv import load_dotenv
 from polygon import RESTClient
@@ -23,11 +22,14 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
     client = RESTClient(api_key)
     aggs = client.get_aggs(ticker, 1, "day", date_str, date_str)
 
+
     if not aggs:
         print("⚠️ Ingen data returnerades från Polygon.io")
         return
 
+
     print(f"📊 Hämtade {len(aggs)} datapunkter för {ticker} ({date_str})")
+
 
     rows = []
     for bar in aggs:
@@ -45,3 +47,4 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
         writer.writerows(rows)
 
     print(f"✅ Skrev {len(rows)} rader till {output_path}")
+
