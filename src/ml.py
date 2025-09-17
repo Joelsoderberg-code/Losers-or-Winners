@@ -1,8 +1,9 @@
-# Importera nödvändiga bibliotek
+import joblib
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from google.cloud import storage
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
 
 # Läs in data
 df = pd.read_csv("../data/stock_data.csv")  # Justera sökvägen vid behov
@@ -39,3 +40,18 @@ y_pred = model.predict(X_test)
 
 # Utvärdera
 print(classification_report(y_test, y_pred))
+
+# Pickla modellen
+model_path = "../data/logreg_model.pkl"
+joblib.dump(model, model_path)
+
+# Ladda upp till GCS
+bucket_name = "polygondata"  # Ändra till ditt bucket-namn
+destination_blob_name = "models/logreg_model.pkl"
+
+client = storage.Client()
+bucket = client.bucket(bucket_name)
+blob = bucket.blob(destination_blob_name)
+blob.upload_from_filename(model_path)
+
+print(f"Modellen är picklad och uppladdad till gs://{bucket_name}/{destination_blob_name}")
