@@ -3,26 +3,26 @@
 Proof-of-Concept för tradingstrategi med risk/reward-analys och maskininlärning.
 
 ## Sprint Week 1
-- Sätta upp repo  
-- Skapa Jira & Miro för sprintöverblick  
-- Bestämma API för marknadsdata  
-- Bygga baseline-modell  
+- Sätta upp repo
+- Skapa Jira & Miro för sprintöverblick
+- Bestämma API för marknadsdata
+- Bygga baseline-modell
 
 ### API-alternativ
-- Alpha Vantage  
-- Finnhub  
-- Marketstack  
-- Riksbanken / SCB (svenska data)  
+- Alpha Vantage
+- Finnhub
+- Marketstack
+- Riksbanken / SCB (svenska data)
 
 ---
 
 ## Project Setup (English)
 
-This repository contains the initial setup for the **Losers or Winners** project.  
+This repository contains the initial setup for the **Losers or Winners** project.
 The goal is to build a financial trading strategy using historical and updated market data, analyzed with machine learning models, to predict whether a strategy is a **winner or loser**.
 
 ### Environment Setup
-We included an `example.env` file.  
+We included an `example.env` file.
 Each team member should copy this file into their personal folder and rename it to `.env`, then add their own credentials:
 
 ```bash
@@ -117,10 +117,10 @@ Tips:
 =======
 ### Getting Started
 
-1. Clone the repository  
-2. Create your own `.env` file based on `example.env`  
-3. Add your personal service account key to the project root  
-4. Install dependencies:  
+1. Clone the repository
+2. Create your own `.env` file based on `example.env`
+3. Add your personal service account key to the project root
+4. Install dependencies:
    ```bash
    pip install -r requirements.txt
 5. - Run the project: python3 main.py

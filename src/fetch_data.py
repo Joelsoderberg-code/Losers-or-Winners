@@ -35,7 +35,9 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
         )
 
     with open(output_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["ticker", "timestamp", "open", "close", "volume"])
+        writer = csv.DictWriter(
+            f, fieldnames=["ticker", "timestamp", "open", "close", "volume"]
+        )
         writer.writeheader()
         writer.writerows(rows)
 

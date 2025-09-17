@@ -10,5 +10,3 @@ ignore = []
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
-
-
