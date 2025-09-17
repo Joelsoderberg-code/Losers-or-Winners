@@ -9,7 +9,7 @@ from datetime import timedelta
 
 def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
 
-    # Hämta gårdagens datum
+    # Hämtar gårdagens datum löpande:
     yesterday = datetime.now() - timedelta(days=1)
     date_str = yesterday.strftime("%Y-%m-%d")
 
