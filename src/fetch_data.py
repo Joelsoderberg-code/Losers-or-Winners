@@ -1,4 +1,4 @@
-# Importerar nödvändiga bibliotek:
+# Importerar alla nödvändiga bibliotek:
 import os
 import csv
 from datetime import datetime
