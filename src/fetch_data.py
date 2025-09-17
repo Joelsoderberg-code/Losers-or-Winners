@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from polygon import RESTClient
 
 
-
 def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
     # Hämta gårdagens datum löpande:
     yesterday = datetime.now() - timedelta(days=1)
