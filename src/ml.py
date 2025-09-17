@@ -39,3 +39,23 @@ y_pred = model.predict(X_test)
 
 # Utvärdera
 print(classification_report(y_test, y_pred))
+
+# Pickla ML modellen:
+
+import joblib
+from google.cloud import storage
+
+# Pickla modellen
+model_path = "../data/logreg_model.pkl"
+joblib.dump(model, model_path)
+
+# Ladda upp till GCS
+bucket_name = "polygondata"  # Ändra till ditt bucket-namn
+destination_blob_name = "models/logreg_model.pkl"
+
+client = storage.Client()
+bucket = client.bucket(bucket_name)
+blob = bucket.blob(destination_blob_name)
+blob.upload_from_filename(model_path)
+
+print(f"Modellen är picklad och uppladdad till gs://{bucket_name}/{destination_blob_name}")

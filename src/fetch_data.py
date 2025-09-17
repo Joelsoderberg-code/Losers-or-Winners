@@ -1,41 +1,26 @@
+
 import csv
 import os
 from datetime import datetime
 
-from dotenv import load_dotenv
 from polygon import RESTClient
 
+from datetime import timedelta
 
-def fetch_data_from_api() -> None:
-    """
-    Hämtar dagliga aggregerade priser från Polygon och sparar till CSV.
+def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
 
-    Konfiguration via miljövariabler (med standardvärden):
-    - POLYGON_API_KEY (krävs)
-    - TICKER (default: AAPL)
-    - START_DATE (default: 2025-09-01)
-    - END_DATE (default: 2025-09-03)
-    - OUTPUT_DIR (default: /home/joel/Losers-or-Winners/data)
-    - OUTPUT_FILE (default: stock_data.csv)
-    """
+    # Hämtar gårdagens datum löpande:
+    yesterday = datetime.now() - timedelta(days=1)
+    date_str = yesterday.strftime("%Y-%m-%d")
 
-    load_dotenv()
-
-    api_key = os.getenv("POLYGON_API_KEY")
-    if not api_key:
-        raise RuntimeError("POLYGON_API_KEY saknas i miljön")
-
-    # Standard: använd ETF:en SPY (tillgänglig på de flesta planer)
-    ticker = os.getenv("TICKER", "SPY")
-    start_date = os.getenv("START_DATE", "2025-09-01")
-    end_date = os.getenv("END_DATE", "2025-09-03")
-
-    output_dir = os.getenv("OUTPUT_DIR", "/home/joel/Losers-or-Winners/data")
-    output_file = os.getenv("OUTPUT_FILE", "stock_data.csv")
-    os.makedirs(output_dir, exist_ok=True)
-    csv_path = os.path.join(output_dir, output_file)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     client = RESTClient(api_key)
+    aggs = client.get_aggs(ticker, 1, "day", date_str, date_str)
+
+    if not aggs:
+        print("⚠️ Ingen data returnerades från Polygon.io")
+        return
 
     aggs = client.get_aggs(
         ticker,
@@ -45,27 +30,23 @@ def fetch_data_from_api() -> None:
         end_date,
     )
 
-    print(f"Hämtade {len(aggs)} datapunkter för {ticker} ({start_date}..{end_date})")
 
-    rows: list[dict[str, object]] = []
+    print(f"📊 Hämtade {len(aggs)} datapunkter för {ticker} ({date_str})
+          
+    rows = []
     for bar in aggs:
-        rows.append(
-            {
-                "ticker": ticker,
-                "date": datetime.fromtimestamp(bar.timestamp / 1000).date().isoformat(),
-                "open": bar.open,
-                "close": bar.close,
-                "volume": bar.volume,
-            }
-        )
+        rows.append({
+            "ticker": ticker,
+            "timestamp": datetime.fromtimestamp(bar.timestamp / 1000).isoformat(),
+            "open": bar.open,
+            "close": bar.close,
+            "volume": bar.volume,
+        })
 
-    with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["ticker", "date", "open", "close", "volume"])
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=["ticker", "timestamp", "open", "close", "volume"])
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Skrev {len(rows)} rader till {csv_path}")
+    print(f"✅ Skrev {len(rows)} rader till {output_path}")
 
-
-if __name__ == "__main__":
-    fetch_data_from_api()
