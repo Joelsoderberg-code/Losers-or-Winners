@@ -29,7 +29,9 @@ X = df[["change"]]
 y = df["winner"]  # 1 = vinst, 0 = förlust
 
 # Dela upp i train/test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
 # Skapa och träna modellen
 model = LogisticRegression()
@@ -54,4 +56,6 @@ bucket = client.bucket(bucket_name)
 blob = bucket.blob(destination_blob_name)
 blob.upload_from_filename(model_path)
 
-print(f"Modellen är picklad och uppladdad till gs://{bucket_name}/{destination_blob_name}")
+print(
+    f"Modellen är picklad och uppladdad till gs://{bucket_name}/{destination_blob_name}"
+)

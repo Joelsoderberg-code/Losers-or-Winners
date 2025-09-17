@@ -20,5 +20,3 @@ jobs:
         run: ruff check .
       - name: Format check
         run: ruff format --check .
-
-

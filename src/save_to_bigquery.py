@@ -50,7 +50,9 @@ def save_data_to_bigquery() -> None:
 
     result = load_job.result()
     table = client.get_table(table_id)
-    print(f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}")
+    print(
+        f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}"
+    )
 
 
 if __name__ == "__main__":

@@ -35,7 +35,9 @@ def load_csv_to_bq(
 
     result = load_job.result()
     table = client.get_table(table_id)
-    print(f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}")
+    print(
+        f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}"
+    )
 
 
 if __name__ == "__main__":
@@ -49,7 +51,9 @@ if __name__ == "__main__":
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"CSV hittas inte: {csv_path}")
 
-    print(f"Laddar {csv_path} till {project_id}:{dataset_name}.{table_name} (mode={write_disposition})")
+    print(
+        f"Laddar {csv_path} till {project_id}:{dataset_name}.{table_name} (mode={write_disposition})"
+    )
     print("Tips: Sätt autentisering via GOOGLE_APPLICATION_CREDENTIALS")
     print("eller kör 'gcloud auth application-default login' innan.")
     load_csv_to_bq(csv_path, project_id, dataset_name, table_name, write_disposition)

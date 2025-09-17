@@ -30,7 +30,9 @@ with DAG(
         load_dotenv()
 
         # API-nyckel: .env först, sedan Airflow Variables
-        api_key = os.getenv("POLYGON_API_KEY") or Variable.get("POLYGON_API_KEY", default_var=None)
+        api_key = os.getenv("POLYGON_API_KEY") or Variable.get(
+            "POLYGON_API_KEY", default_var=None
+        )
         if not api_key:
             raise ValueError("POLYGON_API_KEY saknas i både .env och Airflow Variables")
         os.environ["POLYGON_API_KEY"] = api_key
@@ -42,8 +44,12 @@ with DAG(
             os.environ["TICKER"] = ticker_var
         os.environ["START_DATE"] = Variable.get("START_DATE", default_var="2025-09-01")
         os.environ["END_DATE"] = Variable.get("END_DATE", default_var="2025-09-03")
-        os.environ["OUTPUT_DIR"] = Variable.get("OUTPUT_DIR", default_var="/home/joel/Losers-or-Winners/data")
-        os.environ["OUTPUT_FILE"] = Variable.get("OUTPUT_FILE", default_var="stock_data.csv")
+        os.environ["OUTPUT_DIR"] = Variable.get(
+            "OUTPUT_DIR", default_var="/home/joel/Losers-or-Winners/data"
+        )
+        os.environ["OUTPUT_FILE"] = Variable.get(
+            "OUTPUT_FILE", default_var="stock_data.csv"
+        )
         fetch_data_from_api()
 
     def load_wrapper():
@@ -57,7 +63,9 @@ with DAG(
             os.environ["GCP_PROJECT_ID"] = gcp_project
         os.environ["BQ_DATASET"] = Variable.get("BQ_DATASET", default_var="stocks")
         os.environ["BQ_TABLE"] = Variable.get("BQ_TABLE", default_var="stock_data")
-        os.environ["BQ_WRITE_DISPOSITION"] = Variable.get("BQ_WRITE_DISPOSITION", default_var="WRITE_APPEND")
+        os.environ["BQ_WRITE_DISPOSITION"] = Variable.get(
+            "BQ_WRITE_DISPOSITION", default_var="WRITE_APPEND"
+        )
         # Autentisering: antingen ADC eller servicekonto via fil
         sa_path = Variable.get("GOOGLE_APPLICATION_CREDENTIALS", default_var=None)
         if sa_path:
