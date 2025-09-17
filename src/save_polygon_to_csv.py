@@ -1,8 +1,9 @@
-import os
-from polygon import RESTClient
 import csv
+import os
 from datetime import datetime
+
 from dotenv import load_dotenv
+from polygon import RESTClient
 
 # Ladda miljövariabler
 load_dotenv()
@@ -21,10 +22,10 @@ end_date = "2025-09-03"
 
 aggs = client.get_aggs(
     ticker,
-    1,               # 1 betyder "1-enhet" (day = daglig)
-    "day",           # tidsenhet: day
+    1,  # 1 betyder "1-enhet" (day = daglig)
+    "day",  # tidsenhet: day
     start_date,
-    end_date
+    end_date,
 )
 
 print(f"Hämtade {len(aggs)} datapunkter för {ticker}")
@@ -40,13 +41,15 @@ if len(aggs) > 0:
 # Förbered rader för CSV
 rows = []
 for bar in aggs:
-    rows.append({
-        "ticker": ticker,
-        "date": datetime.fromtimestamp(bar.timestamp / 1000).date().isoformat(),
-        "open": bar.open,
-        "close": bar.close,
-        "volume": bar.volume,
-    })
+    rows.append(
+        {
+            "ticker": ticker,
+            "date": datetime.fromtimestamp(bar.timestamp / 1000).date().isoformat(),
+            "open": bar.open,
+            "close": bar.close,
+            "volume": bar.volume,
+        }
+    )
 
 # Skriv till CSV
 output_dir = "/home/joel/Losers-or-Winners/data"
@@ -59,5 +62,3 @@ with open(csv_path, "w", newline="", encoding="utf-8") as f:
     writer.writerows(rows)
 
 print(f"Skrev {len(rows)} rader till {csv_path}")
-
-

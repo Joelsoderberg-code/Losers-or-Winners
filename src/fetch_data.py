@@ -1,6 +1,6 @@
-# Importerar alla nödvändiga bibliotek:
-import os
+
 import csv
+import os
 from datetime import datetime
 
 from polygon import RESTClient
@@ -22,8 +22,17 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
         print("⚠️ Ingen data returnerades från Polygon.io")
         return
 
-    print(f"📊 Hämtade {len(aggs)} datapunkter för {ticker} ({date_str})")
+    aggs = client.get_aggs(
+        ticker,
+        1,  # 1-enhet
+        "day",  # tidsenhet: dag
+        start_date,
+        end_date,
+    )
 
+
+    print(f"📊 Hämtade {len(aggs)} datapunkter för {ticker} ({date_str})
+          
     rows = []
     for bar in aggs:
         rows.append({
@@ -40,3 +49,4 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
         writer.writerows(rows)
 
     print(f"✅ Skrev {len(rows)} rader till {output_path}")
+

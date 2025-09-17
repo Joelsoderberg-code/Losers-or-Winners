@@ -1,6 +1,7 @@
 import os
-from google.cloud import bigquery
+
 from dotenv import load_dotenv
+from google.cloud import bigquery
 
 
 def save_data_to_bigquery() -> None:
@@ -17,9 +18,7 @@ def save_data_to_bigquery() -> None:
 
     load_dotenv()
 
-    csv_path = os.getenv(
-        "CSV_PATH", "/home/joel/Losers-or-Winners/data/stock_data.csv"
-    )
+    csv_path = os.getenv("CSV_PATH", "/home/joel/Losers-or-Winners/data/stock_data.csv")
     project_id = os.getenv("GCP_PROJECT_ID")
     dataset_name = os.getenv("BQ_DATASET", "stocks")
     table_name = os.getenv("BQ_TABLE", "stock_data")
@@ -51,12 +50,8 @@ def save_data_to_bigquery() -> None:
 
     result = load_job.result()
     table = client.get_table(table_id)
-    print(
-        f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}"
-    )
+    print(f"Laddning klar: {result.output_rows} rader till {table_id}. Totala rader nu: {table.num_rows}")
 
 
 if __name__ == "__main__":
     save_data_to_bigquery()
-
-
