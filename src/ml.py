@@ -1,8 +1,10 @@
-# Importera nödvändiga bibliotek
+
+import joblib
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from google.cloud import storage
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
 
 # Läs in data
 df = pd.read_csv("../data/stock_data.csv")  # Justera sökvägen vid behov
@@ -39,11 +41,6 @@ y_pred = model.predict(X_test)
 
 # Utvärdera
 print(classification_report(y_test, y_pred))
-
-# Pickla ML modellen:
-
-import joblib
-from google.cloud import storage
 
 # Pickla modellen
 model_path = "../data/logreg_model.pkl"

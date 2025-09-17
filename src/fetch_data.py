@@ -1,11 +1,10 @@
 # Importerar alla nödvändiga bibliotek:
-import os
 import csv
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
 
 from polygon import RESTClient
 
-from datetime import timedelta
 
 def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
 
