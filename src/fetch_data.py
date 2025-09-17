@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 from polygon import RESTClient
 
 
-def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
 
+def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
     # Hämta gårdagens datum löpande:
     yesterday = datetime.now() - timedelta(days=1)
     date_str = yesterday.strftime("%Y-%m-%d")
@@ -25,13 +25,15 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
 
     rows = []
     for bar in aggs:
-        rows.append({
-            "ticker": ticker,
-            "timestamp": datetime.fromtimestamp(bar.timestamp / 1000).isoformat(),
-            "open": bar.open,
-            "close": bar.close,
-            "volume": bar.volume,
-        })
+        rows.append(
+            {
+                "ticker": ticker,
+                "timestamp": datetime.fromtimestamp(bar.timestamp / 1000).isoformat(),
+                "open": bar.open,
+                "close": bar.close,
+                "volume": bar.volume,
+            }
+        )
 
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["ticker", "timestamp", "open", "close", "volume"])
