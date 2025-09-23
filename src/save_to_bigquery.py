@@ -18,8 +18,11 @@ def save_data_to_bigquery() -> None:
 
     load_dotenv()
 
-    csv_path = os.getenv("CSV_PATH", "/home/joel/Losers-or-Winners/data/stock_data.csv")
+    # Hårdkodat projekt för konsistens i teamet
     project_id = os.getenv("GCP_PROJECT_ID")
+
+    # Konfigurerbara via .env eller Airflow Variables
+    csv_path = os.getenv("CSV_PATH", "/home/joel/Losers-or-Winners/data/stock_data.csv")
     dataset_name = os.getenv("BQ_DATASET", "stocks")
     table_name = os.getenv("BQ_TABLE", "stock_data")
     write_disposition = os.getenv("BQ_WRITE_DISPOSITION", "WRITE_APPEND")
@@ -38,10 +41,20 @@ def save_data_to_bigquery() -> None:
     except Exception:
         client.create_dataset(bigquery.Dataset(dataset_id), exists_ok=True)
 
+    # Robust schema: undvik autodetect-krockar vid APPEND
+    schema = [
+        bigquery.SchemaField("ticker", "STRING"),
+        bigquery.SchemaField("timestamp", "TIMESTAMP"),
+        bigquery.SchemaField("open", "FLOAT"),
+        bigquery.SchemaField("close", "FLOAT"),
+        bigquery.SchemaField("volume", "INT64"),
+    ]
+
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.CSV,
         skip_leading_rows=1,
-        autodetect=True,
+        autodetect=False,
+        schema=schema,
         write_disposition=write_disposition,
     )
 

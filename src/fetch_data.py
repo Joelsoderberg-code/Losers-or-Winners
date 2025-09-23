@@ -3,10 +3,28 @@ import csv
 import os
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv
 from polygon import RESTClient
 
 
-def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
+def fetch_data_from_api(
+    api_key: str | None = None,
+    ticker: str | None = None,
+    output_path: str | None = None,
+) -> None:
+    # Läs in .env och miljövariabler om argument inte ges
+    load_dotenv()
+    api_key = api_key or os.getenv("POLYGON_API_KEY")
+    if not api_key:
+        raise ValueError("POLYGON_API_KEY saknas i .env/miljön och gavs inte som argument")
+
+    ticker = ticker or os.getenv("TICKER", "SPY")
+
+    if output_path is None:
+        output_dir = os.getenv("OUTPUT_DIR", "/home/joel/Losers-or-Winners/data")
+        output_file = os.getenv("OUTPUT_FILE", "stock_data.csv")
+        output_path = os.path.join(output_dir, output_file)
+
     # Hämta gårdagens datum löpande:
     yesterday = datetime.now() - timedelta(days=1)
     date_str = yesterday.strftime("%Y-%m-%d")
@@ -30,7 +48,7 @@ def fetch_data_from_api(api_key: str, ticker: str, output_path: str) -> None:
                 "timestamp": datetime.fromtimestamp(bar.timestamp / 1000).isoformat(),
                 "open": bar.open,
                 "close": bar.close,
-                "volume": bar.volume,
+                "volume": int(bar.volume) if bar.volume is not None else 0,
             }
         )
 
