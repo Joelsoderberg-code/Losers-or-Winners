@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.models import Variable
@@ -40,8 +40,17 @@ with DAG(
         ticker_var = Variable.get("TICKER", default_var=None)
         if ticker_var:
             os.environ["TICKER"] = ticker_var
-        os.environ["START_DATE"] = Variable.get("START_DATE", default_var="2025-09-01")
-        os.environ["END_DATE"] = Variable.get("END_DATE", default_var="2025-09-03")
+        # Datumintervall: om START_DATE och END_DATE finns som Variables, använd dem.
+        # Annars hämta endast "igår" (UTC) som default.
+        start_var = Variable.get("START_DATE", default_var=None)
+        end_var = Variable.get("END_DATE", default_var=None)
+        if start_var and end_var:
+            os.environ["START_DATE"] = start_var
+            os.environ["END_DATE"] = end_var
+        else:
+            yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
+            os.environ["START_DATE"] = yesterday
+            os.environ["END_DATE"] = yesterday
         os.environ["OUTPUT_DIR"] = Variable.get("OUTPUT_DIR", default_var="/home/joel/Losers-or-Winners/data")
         os.environ["OUTPUT_FILE"] = Variable.get("OUTPUT_FILE", default_var="stock_data.csv")
         fetch_data_from_api()
