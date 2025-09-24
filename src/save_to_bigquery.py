@@ -18,11 +18,9 @@ def save_data_to_bigquery() -> None:
 
     load_dotenv()
 
-    # Hårdkodat projekt för konsistens i teamet
-    project_id = os.getenv("GCP_PROJECT_ID")
-
     # Konfigurerbara via .env eller Airflow Variables
     csv_path = os.getenv("CSV_PATH", "/home/joel/Losers-or-Winners/data/stock_data.csv")
+    project_id = os.getenv("GCP_PROJECT_ID")
     dataset_name = os.getenv("BQ_DATASET", "stocks")
     table_name = os.getenv("BQ_TABLE", "stock_data")
     write_disposition = os.getenv("BQ_WRITE_DISPOSITION", "WRITE_APPEND")
@@ -47,7 +45,7 @@ def save_data_to_bigquery() -> None:
         bigquery.SchemaField("timestamp", "TIMESTAMP"),
         bigquery.SchemaField("open", "FLOAT"),
         bigquery.SchemaField("close", "FLOAT"),
-        bigquery.SchemaField("volume", "INT64"),
+        bigquery.SchemaField("volume", "FLOAT"),
     ]
 
     job_config = bigquery.LoadJobConfig(
