@@ -89,20 +89,33 @@ airflow scheduler &
 ```
 
 6) Sätt Airflow Variables (ersätt med riktiga värden)
-- Varför: Centralt ställe för konfiguration (API-nycklar, datumintervall, filvägar) som koden läser vid körning.
+- Varför: Centralt ställe för konfiguration (API-nycklar, filvägar, tabellnamn) som koden läser vid körning.
 ```bash
+# API-nyckel
 airflow variables set POLYGON_API_KEY DIN_NYCKEL
-airflow variables set TICKER AAPL
-airflow variables set START_DATE 2025-09-01
-airflow variables set END_DATE 2025-09-03
-airflow variables set OUTPUT_DIR $(pwd)/data
-airflow variables set OUTPUT_FILE stock_data.csv
-airflow variables set CSV_PATH $(pwd)/data/stock_data.csv
-airflow variables set BQ_DATASET stocks
-airflow variables set BQ_TABLE stock_data
-airflow variables set BQ_WRITE_DISPOSITION WRITE_APPEND
-# valfritt, om servicekonto används för GCP (krävs för server/CI)
-airflow variables set GOOGLE_APPLICATION_CREDENTIALS /absolut/sökväg/service_account.json
+
+# Filvägar (lokalt)
+airflow variables set OUTPUT_DIR "$(pwd)/data"
+airflow variables set OUTPUT_FILE "stock_data.csv"
+airflow variables set CSV_PATH "$(pwd)/data/stock_data.csv"
+
+# BigQuery
+airflow variables set GCP_PROJECT_ID "winners-or-loosers"
+airflow variables set BQ_DATASET "stocks"
+airflow variables set BQ_TABLE "stock_data"
+airflow variables set BQ_WRITE_DISPOSITION "WRITE_APPEND"
+
+# Valfritt: TICKER (om du vill override:a default SPY)
+# airflow variables set TICKER "SPY"
+
+# Låt START_DATE/END_DATE vara osatta för automatisk "igår" (UTC)
+# Vill du ange manuellt:
+# airflow variables set START_DATE 2024-09-24
+# airflow variables set END_DATE 2024-09-24
+
+# Valfritt, om servicekonto används (server/CI). Annars använd gcloud ADC.
+# airflow variables set GOOGLE_APPLICATION_CREDENTIALS \
+#   "/absolut/sökväg/service_account.json"
 ```
 
 7) Kör DAG:en
@@ -114,6 +127,13 @@ airflow dags trigger fetch_and_load_pipeline
 Tips:
 - Om `airflow`-kommandot inte hittas, kör det via venv: `$(pwd)/.venv/bin/airflow`.
 - Kör inte `dags/*.py` direkt med `python`; Airflow laddar dem automatiskt.
+ - För GCP-auth lokalt:
+   - Antingen ADC: `gcloud auth login --update-adc && gcloud config set project winners-or-loosers`
+   - Eller servicekonto: `export GOOGLE_APPLICATION_CREDENTIALS=/absolut/sökväg/service_account.json`
+
+Schema-notis (BigQuery):
+- Tabellens schema ska vara: `ticker STRING`, `timestamp TIMESTAMP`, `open FLOAT`, `close FLOAT`, `volume FLOAT`.
+- Om du får schema-krock, kör en gång med `BQ_WRITE_DISPOSITION=WRITE_TRUNCATE` och tillbaka till `WRITE_APPEND` efteråt.
 =======
 ### Getting Started
 
