@@ -1,3 +1,14 @@
+"""Hämtar dagliga OHLCV-data från Polygon API och skriver till CSV.
+
+Funktionalitet:
+- Läser API-nyckel och parametrar från argument eller miljövariabler/.env
+- Bestämmer datumintervall: START/END, BACKFILL_DAYS eller default "igår"
+- Skriver CSV med kolumner: ticker, timestamp, open, close, volume
+
+Användning (via DAG eller direkt):
+    fetch_data_from_api()
+"""
+
 # Importerar alla nödvändiga bibliotek:
 import csv
 import os
@@ -12,6 +23,10 @@ def fetch_data_from_api(
     ticker: str | None = None,
     output_path: str | None = None,
 ) -> None:
+    """Hämta aggregerade dagsdata och skriv till CSV.
+
+    Parametrar prioriteras i ordning: funktionsargument → miljövariabler/.env → defaults.
+    """
     # Läs in .env och miljövariabler om argument inte ges
     load_dotenv()
     api_key = api_key or os.getenv("POLYGON_API_KEY")
@@ -21,6 +36,8 @@ def fetch_data_from_api(
     ticker = ticker or os.getenv("TICKER", "SPY")
 
     if output_path is None:
+        # Lokalt defaultar vi till projektmappen; i Composer skrivs detta
+        # över via Airflow Variables till /home/airflow/gcs/data.
         output_dir = os.getenv("OUTPUT_DIR", "/home/joel/Losers-or-Winners/data")
         output_file = os.getenv("OUTPUT_FILE", "stock_data.csv")
         output_path = os.path.join(output_dir, output_file)

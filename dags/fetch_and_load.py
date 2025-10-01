@@ -1,3 +1,10 @@
+"""Airflow DAG som hamtar daglig borsdata fran Polygon och laddar till BigQuery.
+
+- Hamtninig: defaultar till "igar" (UTC) om START_DATE/END_DATE inte ar satta
+- Lagring: laddar en CSV till BigQuery med explicit schema (open/close/volume som FLOAT)
+- Miljoer: fungerar bade lokalt och i Composer; paths styrs via Airflow Variables
+"""
+
 import os
 from datetime import datetime, timedelta
 
@@ -20,12 +27,20 @@ default_args = {
 with DAG(
     dag_id="fetch_and_load_pipeline",
     default_args=default_args,
-    schedule_interval=" 0 3 * * *",
+    schedule_interval="15 12 * * *",
     catchup=False,
     tags=["data_pipeline"],
 ) as dag:
 
     def fetch_wrapper():
+        """Satt miljobariabler och hamta data fran Polygon.
+
+        Ordning for parametrar:
+        - POLYGON_API_KEY: .env eller Airflow Variable
+        - TICKER: Airflow Variable om satt, annars "SPY"
+        - Datum: START_DATE/END_DATE fran Variables, annars igar (UTC)
+        - OUTPUT_DIR/OUTPUT_FILE: styr utdata-CSV
+        """
         # Läs från .env först, fallback till Airflow Variables
         load_dotenv()
 
@@ -35,11 +50,12 @@ with DAG(
             raise ValueError("POLYGON_API_KEY saknas i både .env och Airflow Variables")
         os.environ["POLYGON_API_KEY"] = api_key
 
-        # Övriga parametrar: Läs TICKER endast om den finns som Variable.
-        # Om den inte finns låter vi koden använda sin default (I:SPX).
+        # Övriga parametrar: Läs TICKER om den finns som Variable, annars SPY
         ticker_var = Variable.get("TICKER", default_var=None)
         if ticker_var:
             os.environ["TICKER"] = ticker_var
+        else:
+            os.environ["TICKER"] = "SPY"
         # Datumintervall: om START_DATE och END_DATE finns som Variables, använd dem.
         # Annars hämta endast "igår" (UTC) som default.
         start_var = Variable.get("START_DATE", default_var=None)
@@ -51,15 +67,21 @@ with DAG(
             yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
             os.environ["START_DATE"] = yesterday
             os.environ["END_DATE"] = yesterday
-        os.environ["OUTPUT_DIR"] = Variable.get("OUTPUT_DIR", default_var="/home/joel/Losers-or-Winners/data")
+        os.environ["OUTPUT_DIR"] = Variable.get("OUTPUT_DIR", default_var="/home/airflow/gcs/data")
         os.environ["OUTPUT_FILE"] = Variable.get("OUTPUT_FILE", default_var="stock_data.csv")
         fetch_data_from_api()
 
     def load_wrapper():
+        """Ladda CSV till BigQuery med explicit schema.
+
+        Viktiga variabler:
+        - CSV_PATH: sokvag till CSV (lokalt eller Composer-path)
+        - GCP_PROJECT_ID: GCP-projekt; annars ADC default
+        - BQ_DATASET/BQ_TABLE: maltabell (partitionerad pa DATE(timestamp))
+        - BQ_WRITE_DISPOSITION: WRITE_APPEND (daglig), ev. WRITE_TRUNCATE for engangssfix
+        """
         # Läs parametrar från Airflow Variables (med defaultvärden)
-        os.environ["CSV_PATH"] = Variable.get(
-            "CSV_PATH", default_var="/home/joel/Losers-or-Winners/data/stock_data.csv"
-        )
+        os.environ["CSV_PATH"] = Variable.get("CSV_PATH", default_var="/home/airflow/gcs/data/stock_data.csv")
         # GCP-projekt kan komma från ADC; sätt bara om det finns
         gcp_project = Variable.get("GCP_PROJECT_ID", default_var=None)
         if gcp_project:

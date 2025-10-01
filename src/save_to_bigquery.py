@@ -5,15 +5,15 @@ from google.cloud import bigquery
 
 
 def save_data_to_bigquery() -> None:
-    """
-    Läser CSV och laddar till BigQuery.
+    """Läs en CSV och ladda den till BigQuery med explicit schema.
 
     Miljövariabler (med standardvärden):
-    - CSV_PATH (default: /home/joel/Losers-or-Winners/data/stock_data.csv)
-    - GCP_PROJECT_ID (krävs eller konfigurerad via ADC)
-    - BQ_DATASET (default: stocks)
-    - BQ_TABLE (default: stock_data)
-    - BQ_WRITE_DISPOSITION (default: WRITE_APPEND)
+    - CSV_PATH: sökväg till CSV (lokalt default /home/joel/...,
+      i Composer sätt via Variable till /home/airflow/gcs/data/stock_data.csv)
+    - GCP_PROJECT_ID: GCP-projekt (annars ADC default)
+    - BQ_DATASET: datasetnamn (default "stocks")
+    - BQ_TABLE: tabellnamn (default "stock_data")
+    - BQ_WRITE_DISPOSITION: WRITE_APPEND (daglig), ev. WRITE_TRUNCATE vid schemafix
     """
 
     load_dotenv()
