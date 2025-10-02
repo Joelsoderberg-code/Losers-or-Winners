@@ -8,6 +8,15 @@ google-cloud-storage==2.18.2
 numpy==2.0.2
 pandas==2.2.2
 
+# ML och analys
+scikit-learn==1.5.2
+matplotlib==3.8.4
+seaborn==0.13.2
+joblib==1.5.2
+db-dtypes==1.4.3
+gcsfs==2024.2.0
+fsspec==2024.2.0
+
 requests==2.32.3
 python-dotenv==1.0.1
 certifi==2025.8.3

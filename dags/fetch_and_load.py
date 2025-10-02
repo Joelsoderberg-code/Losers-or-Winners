@@ -35,11 +35,9 @@ with DAG(
     def fetch_wrapper():
         """Satt miljobariabler och hamta data fran Polygon.
 
-        Ordning for parametrar:
-        - POLYGON_API_KEY: .env eller Airflow Variable
-        - TICKER: Airflow Variable om satt, annars "SPY"
-        - Datum: START_DATE/END_DATE fran Variables, annars igar (UTC)
-        - OUTPUT_DIR/OUTPUT_FILE: styr utdata-CSV
+        Logik:
+        - Om BACKFILL_DONE=True: hämta bara igår (daglig uppdatering)
+        - Om BACKFILL_DONE=False: hämta historisk data (backfill) och sätt BACKFILL_DONE=True
         """
         # Läs från .env först, fallback till Airflow Variables
         load_dotenv()
@@ -50,23 +48,38 @@ with DAG(
             raise ValueError("POLYGON_API_KEY saknas i både .env och Airflow Variables")
         os.environ["POLYGON_API_KEY"] = api_key
 
-        # Övriga parametrar: Läs TICKER om den finns som Variable, annars SPY
+        # Ticker
         ticker_var = Variable.get("TICKER", default_var=None)
         if ticker_var:
             os.environ["TICKER"] = ticker_var
         else:
             os.environ["TICKER"] = "SPY"
-        # Datumintervall: om START_DATE och END_DATE finns som Variables, använd dem.
-        # Annars hämta endast "igår" (UTC) som default.
-        start_var = Variable.get("START_DATE", default_var=None)
-        end_var = Variable.get("END_DATE", default_var=None)
-        if start_var and end_var:
-            os.environ["START_DATE"] = start_var
-            os.environ["END_DATE"] = end_var
-        else:
+
+        # Kolla om backfill redan är gjort
+        backfill_done = Variable.get("BACKFILL_DONE", default_var="False")
+
+        if backfill_done == "True":
+            # Daglig uppdatering: hämta bara igår
             yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
             os.environ["START_DATE"] = yesterday
             os.environ["END_DATE"] = yesterday
+            print(f"[DAGLIG] Hämtar data för {yesterday}")
+        else:
+            # Backfill: hämta historisk data
+            start_var = Variable.get("START_DATE", default_var=None)
+            end_var = Variable.get("END_DATE", default_var=None)
+            if start_var and end_var:
+                os.environ["START_DATE"] = start_var
+                os.environ["END_DATE"] = end_var
+                print(f"[BACKFILL] Hämtar historisk data från {start_var} till {end_var}")
+            else:
+                # Default backfill: senaste året
+                one_year_ago = (datetime.utcnow().date() - timedelta(days=365)).isoformat()
+                yesterday = (datetime.utcnow().date() - timedelta(days=1)).isoformat()
+                os.environ["START_DATE"] = one_year_ago
+                os.environ["END_DATE"] = yesterday
+                print(f"[BACKFILL] Hämtar senaste året: {one_year_ago} till {yesterday}")
+
         os.environ["OUTPUT_DIR"] = Variable.get("OUTPUT_DIR", default_var="/home/airflow/gcs/data")
         os.environ["OUTPUT_FILE"] = Variable.get("OUTPUT_FILE", default_var="stock_data.csv")
         fetch_data_from_api()
@@ -93,7 +106,15 @@ with DAG(
         sa_path = Variable.get("GOOGLE_APPLICATION_CREDENTIALS", default_var=None)
         if sa_path:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = sa_path
+
+        # Ladda data till BigQuery
         save_data_to_bigquery()
+
+        # Efter första backfill: sätt BACKFILL_DONE=True
+        backfill_done = Variable.get("BACKFILL_DONE", default_var="False")
+        if backfill_done == "False":
+            Variable.set("BACKFILL_DONE", "True")
+            print("[BACKFILL] Satt BACKFILL_DONE=True - nästa körning blir daglig uppdatering")
 
     fetch_task = PythonOperator(
         task_id="fetch_data",
