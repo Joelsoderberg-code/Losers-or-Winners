@@ -50,9 +50,6 @@ def predict_and_save():
 
     # Prepare features for Random Forest (same order as training)
     feature_cols = [
-        "return",
-        "weekday",
-        "day_of_month",
         "return_lag1",
         "volatility_5d",
         "volatility_20d",
@@ -61,6 +58,8 @@ def predict_and_save():
         "ma5_ma20_diff",
         "volume_ratio_20",
         "volume_change_1d",
+        "weekday",
+        "day_of_month",
     ]
 
     X = df[feature_cols]
