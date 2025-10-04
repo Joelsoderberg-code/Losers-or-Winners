@@ -67,17 +67,20 @@ def predict_and_save():
     preds = model.predict(X)
     probs = model.predict_proba(X)[:, 1]
 
-    df["prediction"] = preds
-    df["probability"] = probs
-    df["load_date"] = datetime.utcnow().date()
+    # Create results DataFrame with only the columns we want to save
+    results = df[["timestamp", "ticker"]].copy()
+    results["prediction"] = preds
+    results["probability"] = probs
+    results["actual_return"] = df["return"]  # Add actual return for comparison
+    results["load_date"] = datetime.utcnow().date()
 
     # Save to GCS directly (Cloud Run compatible via gcsfs)
-    df.to_csv(LOCAL_CSV_PATH, index=False)
+    results.to_csv(LOCAL_CSV_PATH, index=False)
     print(f"[OK] Saved local CSV -> {LOCAL_CSV_PATH}")
 
     # Explicit upload fallback to ensure file lands in GCS
     tmp_path = "/tmp/predictions.csv"
-    df.to_csv(tmp_path, index=False)
+    results.to_csv(tmp_path, index=False)
     storage.Client().bucket("polygondata").blob("data/outputs/predictions.csv").upload_from_filename(tmp_path)
     print("[OK] Uploaded CSV -> gs://polygondata/data/outputs/predictions.csv")
 
@@ -93,7 +96,7 @@ def predict_and_save():
 
     # Save to BigQuery (auto-creates table if needed) - WRITE_TRUNCATE to replace all data
     job = bq_client.load_table_from_dataframe(
-        df,
+        results,
         BQ_OUTPUT_TABLE,
         job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE"),
         location="EU",
