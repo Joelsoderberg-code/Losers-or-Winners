@@ -27,7 +27,7 @@ default_args = {
 with DAG(
     dag_id="fetch_and_load_pipeline",
     default_args=default_args,
-    schedule_interval="50 12 * * *",  # 12:50 UTC ≈ 14:50 lokal (sommar)
+    schedule_interval="05 14 * * *",  # 14:05 UTC ≈ 16:05 lokal (sommar)
     catchup=False,
     tags=["data_pipeline"],
 ) as dag:
