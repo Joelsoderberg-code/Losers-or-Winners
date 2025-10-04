@@ -1,0 +1,38 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  annotations:
+    run.googleapis.com/creator: Klutzor@gmail.com
+    run.googleapis.com/lastModifier: Klutzor@gmail.com
+  labels:
+    cloud.googleapis.com/location: europe-north2
+    run.googleapis.com/lastUpdatedTime: '2025-10-04T12:27:17.206401Z'
+  name: model-scorer
+  namespace: '405907792914'
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/client-name: gcloud
+        run.googleapis.com/client-version: 540.0.0
+        run.googleapis.com/execution-environment: gen2
+      labels:
+        client.knative.dev/nonce: vol_qoq_kul
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          containers:
+          - env:
+            - name: BQ_INPUT_TABLE
+              value: winners-or-loosers.stocks_eu.stock_data
+            - name: BQ_OUTPUT_TABLE
+              value: winners-or-loosers.stocks_eu.prediction
+            image: europe-north2-docker.pkg.dev/winners-or-loosers/predict/model-scorer:v12
+            resources:
+              limits:
+                cpu: '1'
+                memory: 1Gi
+          maxRetries: 3
+          serviceAccountName: pipeline-sa@winners-or-loosers.iam.gserviceaccount.com
+          timeoutSeconds: '600'
