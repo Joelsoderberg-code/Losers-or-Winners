@@ -6,7 +6,7 @@ from airflow.providers.google.cloud.operators.cloud_run import CloudRunExecuteJo
 with DAG(
     dag_id="predict_pipeline",
     start_date=datetime(2024, 1, 1),
-    schedule_interval="35 6 * * *",  # 06:35 UTC ≈ 08:35 svensk tid (CEST)
+    schedule_interval="45 14 * * *",  # 14:45 UTC ≈ 16:45 lokal (sommar) - 5 min efter data-hämtning
     catchup=False,
     tags=["ml"],
 ) as dag:

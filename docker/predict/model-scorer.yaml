@@ -28,7 +28,7 @@ spec:
               value: winners-or-loosers.stocks_eu.stock_data
             - name: BQ_OUTPUT_TABLE
               value: winners-or-loosers.stocks_eu.prediction
-            image: europe-north2-docker.pkg.dev/winners-or-loosers/predict/model-scorer:v13
+            image: europe-north2-docker.pkg.dev/winners-or-loosers/predict/model-scorer:v12
             resources:
               limits:
                 cpu: '1'

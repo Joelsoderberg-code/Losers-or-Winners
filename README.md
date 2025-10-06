@@ -17,41 +17,6 @@ Proof-of-Concept för tradingstrategi med risk/reward-analys och maskininlärnin
 ---
 
 ## Project Setup (English)
-## Konfiguration (prod/dev)
-
-Vi separerar delbar konfiguration och hemligheter:
-
-- Delbar konfig (i Git): `config/config.ini`
-- Hemligheter (inte i Git): `.env` (endast nycklar, t.ex. `POLYGON_API_KEY`)
-
-Laddningsordning i kod: ENV > `.env` > `config/config.ini` > Airflow Variables (fallback)
-
-Exempel `config/config.ini`:
-```ini
-[default]
-TICKER=SPY
-START_DATE=2025-10-01
-END_DATE=2025-10-03
-BACKFILL_DAYS=0
-
-OUTPUT_DIR=/home/airflow/gcs/data
-OUTPUT_FILE=stock_data.csv
-CSV_PATH=/home/airflow/gcs/data/stock_data.csv
-
-GCP_PROJECT_ID=winners-or-loosers
-BQ_DATASET=stocks_eu
-BQ_TABLE=stock_data
-BQ_WRITE_DISPOSITION=WRITE_APPEND
-```
-
-Exempel `.env` (lägg inte i Git):
-```ini
-POLYGON_API_KEY=din-nyckel
-```
-
-Composer/Cloud Composer: Lägg dessa filer i DAGs-bucket:
-- `gs://<composer-bucket>/dags/config/config.ini`
-- `gs://<composer-bucket>/dags/config/.env` (frivillig, endast hemligheter)
 
 This repository contains the initial setup for the **Losers or Winners** project.  
 The goal is to build a financial trading strategy using historical and updated market data, analyzed with machine learning models, to predict whether a strategy is a **winner or loser**.
