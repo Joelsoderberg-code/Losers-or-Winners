@@ -31,6 +31,8 @@ def predict_and_save():
 
     # Feature engineering for Random Forest
     df["timestamp"] = pd.to_datetime(df["timestamp"])
+    # Viktigt: sortera i stigande ordning per ticker innan rullande beräkningar
+    df = df.sort_values(by=["ticker", "timestamp"])  # säkerställer att senaste dagarna inte försvinner vid dropna
     df["return"] = df["close"].pct_change()
     df["return_lag1"] = df["return"].shift(1)
     df["volatility_5d"] = df["return"].rolling(window=5).std()
