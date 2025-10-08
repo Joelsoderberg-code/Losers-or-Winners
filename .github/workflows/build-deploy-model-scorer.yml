@@ -50,9 +50,8 @@ jobs:
         working-directory: docker/predict
         run: |
           TAG=v${{ github.run_number }}
-          SA_RESOURCE=projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ secrets.GCP_CI_SA }}
           gcloud builds submit \
-            --service-account=$SA_RESOURCE \
+            --service-account=${{ secrets.GCP_CI_SA }} \
             --gcs-log-dir=gs://winners-or-loosers_cloudbuild/logs \
             --tag $IMAGE:$TAG \
             --timeout=1200s .
