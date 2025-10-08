@@ -30,7 +30,6 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER }}
           service_account: ${{ secrets.GCP_CI_SA }}
-          export_default_credentials: true
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -51,6 +50,7 @@ jobs:
         working-directory: docker/predict
         run: |
           TAG=v${{ github.run_number }}
+          SA_RESOURCE=projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ secrets.GCP_CI_SA }}
           gcloud builds submit \
             --service-account=${{ secrets.GCP_CI_SA }} \
             --gcs-log-dir=gs://winners-or-loosers_cloudbuild/logs \
