@@ -1,0 +1,61 @@
+name: Build and Deploy model-scorer
+
+on:
+  push:
+    branches: [ main, feature/** ]
+    paths:
+      - 'docker/predict/**'
+      - '.github/workflows/build-deploy-model-scorer.yml'
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: winners-or-loosers
+      REGION: europe-north2
+      IMAGE: europe-north2-docker.pkg.dev/winners-or-loosers/predict/model-scorer
+      JOB_NAME: model-scorer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          install_components: 'gcloud'
+
+      - name: Auth with Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER }}
+          service_account: ${{ secrets.GCP_CI_SA }}
+
+      - name: Configure Docker auth
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        working-directory: docker/predict
+        run: |
+          TAG=v${{ github.run_number }}
+          gcloud builds submit --tag $IMAGE:$TAG --timeout=1200s .
+          echo "IMAGE_TAG=$IMAGE:$TAG" >> $GITHUB_ENV
+
+      - name: Update Cloud Run Job YAML
+        run: |
+          sed -i "s#image: .\+#image: $IMAGE:${{ github.run_number }}#" docker/predict/model-scorer.yaml
+
+      - name: Deploy Cloud Run Job
+        run: gcloud run jobs replace docker/predict/model-scorer.yaml --region=$REGION --project=$PROJECT_ID
+
+      - name: Optional smoke execution
+        if: github.ref == 'refs/heads/main'
+        run: gcloud run jobs execute $JOB_NAME --region=$REGION --project=$PROJECT_ID --wait
+
+

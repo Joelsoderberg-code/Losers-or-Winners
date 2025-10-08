@@ -6,3 +6,4 @@ google-cloud-bigquery
 gcsfs
 scikit-learn==1.5.2
 db-dtypes
+# ci: trigger build-deploy workflow
