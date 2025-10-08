@@ -55,7 +55,7 @@ jobs:
 
       - name: Update Cloud Run Job YAML
         run: |
-          sed -i "s#image: .\+#image: $IMAGE:${{ github.run_number }}#" docker/predict/model-scorer.yaml
+          sed -i "s#image: .\+#image: $IMAGE:v${{ github.run_number }}#" docker/predict/model-scorer.yaml
 
       - name: Deploy Cloud Run Job
         run: gcloud run jobs replace docker/predict/model-scorer.yaml --region=$REGION --project=$PROJECT_ID
