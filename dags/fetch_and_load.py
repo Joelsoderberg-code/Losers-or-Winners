@@ -41,7 +41,7 @@ default_args = {
 with DAG(
     dag_id="fetch_and_load_pipeline",
     default_args=default_args,
-    schedule_interval="55 2 * * *",  # 02:55 UTC ≈ 04:55 svensk tid (CEST)
+    schedule_interval="10 14 * * *",  # 14:10 UTC ≈ 16:10 svensk tid (CEST)
     catchup=False,
     tags=["data_pipeline"],
 ) as dag:
