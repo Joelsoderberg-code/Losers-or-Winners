@@ -6,6 +6,7 @@ on:
     paths:
       - 'docker/predict/**'
       - '.github/workflows/build-deploy-model-scorer.yml'
+  workflow_dispatch:
 
 jobs:
   build-deploy:

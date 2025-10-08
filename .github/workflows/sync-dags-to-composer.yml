@@ -6,6 +6,7 @@ on:
     paths:
       - 'dags/**'
       - '.github/workflows/sync-dags-to-composer.yml'
+  workflow_dispatch:
 
 jobs:
   sync:
