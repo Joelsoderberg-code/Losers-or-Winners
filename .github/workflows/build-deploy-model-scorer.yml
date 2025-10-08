@@ -46,13 +46,11 @@ jobs:
           gcloud config get-value account
           gcloud config list
 
-      - name: Build and push image (Cloud Build)
-        working-directory: docker/predict
+      - name: Build and push image (Docker)
         run: |
           TAG=v${{ github.run_number }}
-          gcloud builds submit \
-            --tag $IMAGE:$TAG \
-            --timeout=1200s .
+          docker build -t $IMAGE:$TAG docker/predict
+          docker push $IMAGE:$TAG
           echo "IMAGE_TAG=$IMAGE:$TAG" >> $GITHUB_ENV
 
       - name: Update Cloud Run Job YAML
