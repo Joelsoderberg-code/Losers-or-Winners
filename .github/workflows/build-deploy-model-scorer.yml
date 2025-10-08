@@ -41,6 +41,12 @@ jobs:
       - name: Configure Docker auth
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
+      - name: Who am I
+        run: |
+          gcloud auth list
+          gcloud config get-value account
+          gcloud config list
+
       - name: Build and push image (Cloud Build)
         working-directory: docker/predict
         run: |
