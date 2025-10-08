@@ -2,6 +2,48 @@
 
 ## 🏗️ Hela Systemarkitekturen
 
+### Quick Map (Mermaid – aktuellt läge)
+
+```mermaid
+flowchart LR
+  subgraph Airflow[Apache Airflow (Composer)]
+    A1[fetch_and_load_pipeline\nCron: 06:30 UTC]
+    A2[predict_pipeline\nCron: 06:35 UTC]
+  end
+
+  subgraph Ingestion[Ingestion]
+    I1[Polygon API]
+    I2[fetch_data.py\n.env + config.ini (Variables fallback)]
+    I3[save_to_bigquery.py\nStaging + MERGE (idempotent)\n→ stocks_eu.stock_data]
+  end
+
+  subgraph ML[ML]
+    M1[train_randomforest.py\nT+1 target, 10 features]
+    M2[(GCS) models/randomforest_model.pkl]
+  end
+
+  subgraph Serving[Batch Predict (Cloud Run Job)]
+    S1[model-scorer (v16)\npredict.py\n→ WRITE_TRUNCATE]
+    S2[(BQ) stocks_eu.prediction]
+  end
+
+  subgraph Storage[Storage & Viz]
+    GCS[(GCS) data/outputs/predictions.csv]
+    VZ[Looker Studio / SQL]
+  end
+
+  %% Flöden
+  A1 -->|trigger| I2 --> I3 --> SDD[(BQ) stock_data]
+  I1 --> I2
+  SDD --> M1 --> M2
+  A2 -->|execute Job| S1
+  M2 --> S1
+  SDD --> S1
+  S1 -->|CSV| GCS
+  S1 --> S2
+  S2 --> VZ
+```
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
 │                           LOSERS-OR-WINNERS DATA PLATFORM                      │
@@ -17,7 +59,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AIRFLOW SCHEDULER                           │
-│                   (Körs dagligen 12:15 UTC)                   │
+│                   (Körs dagligen 06:30 UTC)                   │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -116,9 +158,9 @@
 │                train_randomforest.py                           │
 │                                                                 │
 │  Data Processing:                                              │
-│    ├─ Ladda 1000 senaste raderna                              │
-│    ├─ Feature Engineering (11 features):                      │
-│    │   ├─ return, weekday, day_of_month                       │
+│    ├─ Ladda senaste rader (tillräckligt för T+1)              │
+│    ├─ Feature Engineering (10 features):                      │
+│    │   ├─ weekday, day_of_month                               │
 │    │   ├─ return_lag1, volatility_5d, volatility_20d          │
 │    │   ├─ momentum_5d, price_above_ma20                       │
 │    │   ├─ ma5_ma20_diff, volume_ratio_20                      │
@@ -131,9 +173,11 @@
 │    ├─ class_weight="balanced"                                 │
 │    └─ train_test_split (80/20)                                │
 │                                                                 │
+│  Target:                                                       │
+│    └─ T+1 (nästa dags upp/ner): target = (return.shift(-1)>0)  │
 │  Evaluation:                                                   │
-│    ├─ Accuracy: 1.000                                         │
-│    └─ AUC: 1.000                                              │
+│    ├─ Accuracy: …                                             │
+│    └─ AUC: …                                                  │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -150,7 +194,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AIRFLOW SCHEDULER                           │
-│                   (Körs dagligen 12:15 UTC)                   │
+│                   (Körs dagligen 06:35 UTC)                   │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -170,8 +214,8 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                    GOOGLE CLOUD RUN                            │
 │                                                                 │
-│  Service: model-scorer                                         │
-│  Container: europe-north2-docker.pkg.dev/.../model-scorer:v8  │
+│  Job: model-scorer                                             │
+│  Container: europe-north2-docker.pkg.dev/.../model-scorer:v16 │
 │  Resources: CPU/Memory auto-scaling                            │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -202,7 +246,7 @@
 │                                                                 │
 │  Registry: europe-north2-docker.pkg.dev                       │
 │  Repository: winners-or-loosers/predict                        │
-│  Image: model-scorer:v8                                        │
+│  Image: model-scorer:v16                                       │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -222,7 +266,7 @@
 │                                                                 │
 │  Source: gs://polygondata/models/randomforest_model.pkl       │
 │  Method: fsspec + joblib.load()                               │
-│  Features: 11 (return, weekday, volatility, etc.)             │
+│  Features: 10 (utan 'return'; inkluderar weekday, vol, m.m.)  │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -239,8 +283,8 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                    FEATURE ENGINEERING                         │
 │                                                                 │
-│  Same 11 features as training:                                │
-│    ├─ return, weekday, day_of_month                           │
+│  Same 10 features as training:                                │
+│    ├─ weekday, day_of_month                                   │
 │    ├─ return_lag1, volatility_5d, volatility_20d              │
 │    ├─ momentum_5d, price_above_ma20                           │
 │    ├─ ma5_ma20_diff, volume_ratio_20                          │
@@ -254,7 +298,8 @@
 │                    PREDICTION GENERATION                       │
 │                                                                 │
 │  Model: RandomForestClassifier                                 │
-│  Input: X (258 rows × 11 features)                            │
+│  Target: T+1 (nästa dag)                                       │
+│  Input: X (n rader × 10 features)                              │
 │  Output:                                                       │
 │    ├─ predictions (0 or 1)                                    │
 │    └─ probabilities (0.0 to 1.0)                              │
@@ -270,7 +315,7 @@
 │  Schema:                                                       │
 │    ├─ timestamp, ticker                                       │
 │    ├─ prediction, probability                                 │
-│    ├─ actual_return, actual_target                            │
+│    ├─ actual_return                                           │
 │    └─ load_date                                               │
 │                                                                 │
 │  Write Mode: WRITE_TRUNCATE (ersätter all data)               │
@@ -284,7 +329,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                DEVELOPMENT & ANALYSIS                          │
 │                                                                 │
-│  Script: prediction_randomforest.py                           │
+│  Script: prediction_randomforest.py                            │
 │  Purpose: Lokal utveckling och analys                          │
 │                                                                 │
 │  Features:                                                     │
@@ -300,7 +345,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        START                                   │
-│                   (Daglig 12:15 UTC)                          │
+│                   (Daglig 06:30/06:35 UTC)                    │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼

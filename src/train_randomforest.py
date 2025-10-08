@@ -35,7 +35,8 @@ def prepare_features(df):
     """Prepare features for Random Forest."""
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df["return"] = df["close"].pct_change()
-    df["target"] = (df["return"] > 0).astype(int)
+    # T+1-mål: nästa dags riktning
+    df["target"] = df["return"].shift(-1).gt(0).astype(int)
     df["return_lag1"] = df["return"].shift(1)
     df["volatility_5d"] = df["return"].rolling(window=5).std()
     df["volatility_20d"] = df["return"].rolling(window=20).std()
@@ -49,7 +50,7 @@ def prepare_features(df):
     df["weekday"] = df["timestamp"].dt.dayofweek
     df["day_of_month"] = df["timestamp"].dt.day
 
-    # Drop NaN values
+    # Drop NaN values och ta bort sista raden per ticker (saknar T+1)
     df = df.dropna()
     print(f"After feature engineering: {len(df)} rows")
     return df
