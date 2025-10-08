@@ -51,7 +51,7 @@ jobs:
         working-directory: docker/predict
         run: |
           TAG=v${{ github.run_number }}
-          gcloud builds submit --tag $IMAGE:$TAG --timeout=1200s .
+          gcloud builds submit --service-account=${{ secrets.GCP_CI_SA }} --tag $IMAGE:$TAG --timeout=1200s .
           echo "IMAGE_TAG=$IMAGE:$TAG" >> $GITHUB_ENV
 
       - name: Update Cloud Run Job YAML
