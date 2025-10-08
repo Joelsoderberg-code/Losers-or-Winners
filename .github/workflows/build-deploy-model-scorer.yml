@@ -25,26 +25,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Auth with Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER }}
+          service_account: ${{ secrets.GCP_CI_SA }}
+          export_default_credentials: true
+
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'gcloud'
 
-      - name: Auth with Workload Identity Federation
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_ID_PROVIDER }}
-          service_account: ${{ secrets.GCP_CI_SA }}
-
       - name: Configure Docker auth
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      - name: Build and push image
+      - name: Who am I
+        run: |
+          gcloud auth list
+          gcloud config get-value account
+          gcloud config list
+
+      - name: Build and push image (Cloud Build)
         working-directory: docker/predict
         run: |
           TAG=v${{ github.run_number }}
-          gcloud builds submit --tag $IMAGE:$TAG --timeout=1200s .
+          gcloud builds submit --service-account=${{ secrets.GCP_CI_SA }} --tag $IMAGE:$TAG --timeout=1200s .
           echo "IMAGE_TAG=$IMAGE:$TAG" >> $GITHUB_ENV
 
       - name: Update Cloud Run Job YAML
