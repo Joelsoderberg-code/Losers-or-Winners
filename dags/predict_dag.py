@@ -3,6 +3,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.providers.google.cloud.operators.cloud_run import CloudRunExecuteJobOperator
 
+# CI autosync test: no-op comment to trigger workflow
 with DAG(
     dag_id="predict_pipeline",
     start_date=datetime(2024, 1, 1),

@@ -38,6 +38,7 @@ default_args = {
 }
 
 
+# CI autosync test: no-op comment to trigger workflow
 with DAG(
     dag_id="fetch_and_load_pipeline",
     default_args=default_args,
